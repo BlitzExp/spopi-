@@ -5,20 +5,21 @@ RUN apk add --no-cache openssl
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-COPY apps/api/package.json ./apps/api/
-COPY apps/web/package.json ./apps/web/
-COPY packages/db/package.json ./packages/db/
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/web/package.json ./apps/web/package.json
+COPY packages/db/package.json ./packages/db/package.json
 COPY packages/db/prisma ./packages/db/prisma
-COPY tsconfig.base.json ./
 
 RUN npm install
 
+COPY tsconfig.base.json ./tsconfig.base.json
 COPY packages/db ./packages/db
 COPY apps/api ./apps/api
-COPY scripts ./scripts
 
-RUN chmod +x /app/scripts/api-dev.sh && npm run db:generate
+RUN npm run db:generate -w @spopi/db
+RUN npm run build -w @spopi/db
+RUN npm run build -w @spopi/api
 
 EXPOSE 4000
 
-CMD ["sh", "/app/scripts/api-dev.sh"]
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=packages/db/prisma/schema.prisma && npm run start -w @spopi/api"]
