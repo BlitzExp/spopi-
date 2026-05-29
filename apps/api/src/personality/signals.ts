@@ -1,5 +1,3 @@
-import { normalizeArtistName } from "../spotify-api/normalize";
-import type { EnrichedArtist } from "../spotify-api/types";
 import type { NormalizedListeningEvent } from "../spotify/types";
 import type { AnalyticsSummary } from "../analytics/types";
 import type { ListeningSignals } from "./types";
@@ -8,19 +6,6 @@ const SESSION_GAP_MS = 30 * 60 * 1000;
 
 function clamp(value: number, min = 0, max = 1): number {
   return Math.min(max, Math.max(min, value));
-}
-
-function genreShare(events: NormalizedListeningEvent[], artistGenres: Map<string, EnrichedArtist>, keywords: string[]): number {
-  if (events.length === 0) return 0;
-  let matched = 0;
-
-  for (const event of events) {
-    const genres = artistGenres.get(normalizeArtistName(event.artist))?.genres ?? [];
-    const haystack = genres.join(" ").toLowerCase();
-    if (keywords.some((keyword) => haystack.includes(keyword))) matched += 1;
-  }
-
-  return matched / events.length;
 }
 
 function computeSessions(events: NormalizedListeningEvent[]): number[] {
@@ -51,7 +36,6 @@ function computeSessions(events: NormalizedListeningEvent[]): number[] {
 export function extractListeningSignals(
   events: NormalizedListeningEvent[],
   analytics: AnalyticsSummary,
-  artistGenres: Map<string, EnrichedArtist>,
 ): ListeningSignals {
   const totalStreams = events.length || 1;
   const trackCounts = new Map<string, number>();
@@ -77,11 +61,7 @@ export function extractListeningSignals(
   const nicheArtists = [...artistCounts.values()].filter((count) => count <= 3).length;
   const nicheArtistShare = clamp(nicheArtists / Math.max(artistCounts.size, 1));
 
-  const uniqueGenres = new Set<string>();
-  for (const meta of artistGenres.values()) {
-    for (const genre of meta.genres) uniqueGenres.add(genre.toLowerCase());
-  }
-  const genreDiversity = clamp(uniqueGenres.size / 12);
+  const genreDiversity = 0;
 
   const topArtistMinutes = analytics.topArtists[0]?.minutes ?? 0;
   const artistLoyalty = clamp(topArtistMinutes / Math.max(analytics.totalListeningMinutes, 1));
@@ -125,10 +105,10 @@ export function extractListeningSignals(
     avgSessionSize: clamp(avgSessionSize / 12),
     moodVolatility,
     autumnShare: autumn / totalStreams,
-    indieGenreShare: genreShare(events, artistGenres, ["indie", "alternative", "folk", "bedroom"]),
-    hyperpopShare: genreShare(events, artistGenres, ["hyperpop", "glitch", "experimental"]),
-    dreamPopShare: genreShare(events, artistGenres, ["dream pop", "shoegaze", "ethereal", "ambient pop"]),
-    energyGenreShare: genreShare(events, artistGenres, ["edm", "dance", "punk", "metal", "drum and bass"]),
+    indieGenreShare: 0,
+    hyperpopShare: 0,
+    dreamPopShare: 0,
+    energyGenreShare: 0,
     longTailShare,
     uniqueArtistRatio,
   };

@@ -1,4 +1,3 @@
-import type { EnrichedArtist } from "../spotify-api/types";
 import type { NormalizedListeningEvent } from "../spotify/types";
 import type { AnalyticsSummary } from "../analytics/types";
 import { buildDominantCommentary, PERSONALITY_DEFINITIONS } from "./scoring";
@@ -8,9 +7,8 @@ import type { PersonalityAnalysis, PersonalityArchetype } from "./types";
 export function analyzePersonalities(
   events: NormalizedListeningEvent[],
   analytics: AnalyticsSummary,
-  artistGenres: Map<string, EnrichedArtist> = new Map(),
 ): PersonalityAnalysis {
-  const signals = extractListeningSignals(events, analytics, artistGenres);
+  const signals = extractListeningSignals(events, analytics);
 
   const scored: PersonalityArchetype[] = PERSONALITY_DEFINITIONS.map((definition) => ({
     id: definition.id,

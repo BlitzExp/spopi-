@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import { uploadZipForAnalytics } from "@/lib/api/client";
-import type { AnalyticsSummary, ArtistRecommendation, PersonalityAnalysis } from "@/lib/api/types";
+import type { AnalyticsSummary, PersonalityAnalysis } from "@/lib/api/types";
 
 type UploadResult =
   | { ok: true; eventCount: number; streamingHistoryFiles: string[] }
@@ -12,7 +12,6 @@ type UploadDropzoneProps = {
   onResultsReady: (results: {
     analytics: AnalyticsSummary;
     personality: PersonalityAnalysis;
-    recommendations: ArtistRecommendation[];
   }) => void;
 };
 
@@ -57,7 +56,6 @@ export function UploadDropzone({ onResultsReady }: UploadDropzoneProps) {
         onResultsReady({
           analytics: response.analytics,
           personality: response.personality,
-          recommendations: response.recommendations ?? [],
         });
       } catch (uploadError) {
         setProgress(null);

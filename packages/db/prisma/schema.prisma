@@ -12,13 +12,3 @@ model UploadSession {
   createdAt DateTime @default(now())
   status    String   @default("CREATED")
 }
-
-model ArtistMetadata {
-  id              String   @id @default(cuid())
-  artistName      String   @unique
-  spotifyArtistId String?
-  genres          String[]
-  imageUrl        String?
-  fetchedAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}

@@ -5,12 +5,11 @@ import { AnalyticsDashboard } from "@/components/AnalyticsDashboard";
 import { PersonalityProfile } from "@/components/personality/PersonalityProfile";
 import { UploadDropzone } from "@/components/UploadDropzone";
 import { WrappedExperience } from "@/components/wrapped/WrappedExperience";
-import type { AnalyticsSummary, ArtistRecommendation, PersonalityAnalysis } from "@/lib/api/types";
+import type { AnalyticsSummary, PersonalityAnalysis } from "@/lib/api/types";
 
 export default function Home() {
   const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
   const [personality, setPersonality] = useState<PersonalityAnalysis | null>(null);
-  const [recommendations, setRecommendations] = useState<ArtistRecommendation[]>([]);
   const [activeView, setActiveView] = useState<"dashboard" | "wrapped" | "personality">("dashboard");
 
   return (
@@ -31,10 +30,9 @@ export default function Home() {
 
         <section className="flex">
           <UploadDropzone
-            onResultsReady={({ analytics: nextAnalytics, personality: nextPersonality, recommendations: nextRecommendations }) => {
+            onResultsReady={({ analytics: nextAnalytics, personality: nextPersonality }) => {
               setAnalytics(nextAnalytics);
               setPersonality(nextPersonality);
-              setRecommendations(nextRecommendations);
             }}
           />
         </section>
@@ -81,7 +79,6 @@ export default function Home() {
               <AnalyticsDashboard
                 data={analytics}
                 personality={personality}
-                recommendations={recommendations}
               />
             ) : null}
             {activeView === "wrapped" ? (

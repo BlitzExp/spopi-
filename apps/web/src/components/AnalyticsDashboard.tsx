@@ -1,13 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { AnalyticsSummary, ArtistRecommendation, PersonalityAnalysis } from "@/lib/api/types";
-import { getArtistGenres } from "@/lib/genres";
-import { ArtistRecommendations } from "@/components/recommendations/ArtistRecommendations";
+import type { AnalyticsSummary, PersonalityAnalysis } from "@/lib/api/types";
 import { RetroPanel } from "@/components/dashboard/RetroPanel";
-import { GenreTag } from "@/components/dashboard/GenreTag";
-import { TopGenresSection } from "@/components/dashboard/TopGenresSection";
-import { GenreDistributionChart } from "@/components/dashboard/charts/GenreDistributionChart";
 import { ListeningHeatmap } from "@/components/dashboard/charts/ListeningHeatmap";
 import { MonthlyTrendsLineChart } from "@/components/dashboard/charts/MonthlyTrendsLineChart";
 import { TopArtistsBarChart } from "@/components/dashboard/charts/TopArtistsBarChart";
@@ -16,7 +11,6 @@ import { TopTracksBarChart } from "@/components/dashboard/charts/TopTracksBarCha
 type Props = {
   data: AnalyticsSummary;
   personality?: PersonalityAnalysis;
-  recommendations?: ArtistRecommendation[];
 };
 
 function StatCard({ label, value, accent }: { label: string; value: string | number; accent: string }) {
@@ -32,10 +26,7 @@ function StatCard({ label, value, accent }: { label: string; value: string | num
   );
 }
 
-export function AnalyticsDashboard({ data, personality, recommendations = [] }: Props) {
-  const genreTags = data.genreTags ?? [];
-  const artistGenres = data.artistGenres ?? {};
-
+export function AnalyticsDashboard({ data, personality }: Props) {
   return (
     <div className="w-full max-w-6xl space-y-4">
       {personality ? (
@@ -57,47 +48,17 @@ export function AnalyticsDashboard({ data, personality, recommendations = [] }: 
       <div className="grid gap-3 lg:grid-cols-2">
         <RetroPanel title="Top Artists" delay={0.05}>
           <TopArtistsBarChart data={data.topArtists} />
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {data.topArtists.slice(0, 5).flatMap((artist, artistIndex) =>
-              getArtistGenres(artist.name, artistGenres).slice(0, 2).map((genre, genreIndex) => (
-                <GenreTag
-                  key={`${artist.name}-${genre}`}
-                  label={genre}
-                  index={artistIndex + genreIndex}
-                  size="sm"
-                />
-              )),
-            )}
-          </div>
         </RetroPanel>
         <RetroPanel title="Top Tracks" delay={0.1}>
           <TopTracksBarChart data={data.topTracks} />
         </RetroPanel>
       </div>
 
-      <div className="grid gap-3 lg:grid-cols-2">
-        <RetroPanel title="Top Genres" delay={0.12}>
-          <TopGenresSection topGenres={data.topGenres} genreTags={genreTags} />
-        </RetroPanel>
-        <RetroPanel title="Genre Distribution" delay={0.15}>
-          <GenreDistributionChart data={data.topGenres} />
-        </RetroPanel>
-      </div>
-
-      <div className="grid gap-3 lg:grid-cols-2">
+      <div className="grid gap-3">
         <RetroPanel title="Monthly Listening Trends" delay={0.2}>
           <MonthlyTrendsLineChart data={data.monthlyListeningTrends} />
         </RetroPanel>
-        <RetroPanel title="Genre Moodboard" delay={0.22}>
-          <div className="flex flex-wrap gap-2 p-2">
-            {genreTags.map((tag, index) => (
-              <GenreTag key={tag} label={tag} index={index} />
-            ))}
-          </div>
-        </RetroPanel>
       </div>
-
-      <ArtistRecommendations recommendations={recommendations} />
 
       <div className="grid gap-3">
         <RetroPanel title="Listening Heatmap" delay={0.25}>

@@ -53,23 +53,12 @@ export type PersonalityAnalysis = {
   archetypes: PersonalityArchetype[];
 };
 
-export type ArtistRecommendation = {
-  artistName: string;
-  spotifyArtistId: string;
-  imageUrl: string | null;
-  genres: string[];
-  explanation: string;
-  reason: string;
-  label: string;
-};
-
 export type AnalyticsUploadResponse = {
   ok: true;
   streamingHistoryFiles: string[];
   eventCount: number;
   analytics: AnalyticsSummary;
   personality: PersonalityAnalysis;
-  recommendations: ArtistRecommendation[];
 };
 
 export type ApiErrorResponse = {
