@@ -68,27 +68,6 @@ export function WrappedExperience({ data, personality }: Props) {
       </div>
     </WrappedSlideFrame>,
     <WrappedSlideFrame
-      key="genres"
-      title="Your Top Genres"
-      subtitle="the sonic stickers on your year"
-      accentClass="bg-gradient-to-br from-yellow-300 via-lime-200 to-cyan-200"
-    >
-      <div className="space-y-4 text-center text-black">
-        <div className="flex flex-wrap justify-center gap-2">
-          {data.genreTags.length > 0 ? (
-            data.genreTags.map((tag, index) => <GenreTag key={tag} label={tag} index={index} />)
-          ) : (
-            <p className="text-sm">Upload with Spotify credentials configured to unlock genre tags.</p>
-          )}
-        </div>
-        {data.topGenres[0] ? (
-          <p className="text-lg font-bold">
-            #{1} vibe: {data.topGenres[0].genre} ({data.topGenres[0].minutes} min)
-          </p>
-        ) : null}
-      </div>
-    </WrappedSlideFrame>,
-    <WrappedSlideFrame
       key="personality"
       title="Listening Personality"
       subtitle="your music identity this year"
