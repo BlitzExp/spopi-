@@ -17,14 +17,6 @@ export type SpotifyArtistSearchResponse = {
   };
 };
 
-export type SpotifyRelatedArtistItem = SpotifyArtistSearchItem & {
-  popularity?: number;
-};
-
-export type SpotifyRelatedArtistsResponse = {
-  artists: SpotifyRelatedArtistItem[];
-};
-
 export type EnrichedArtist = {
   artistName: string;
   spotifyArtistId: string | null;

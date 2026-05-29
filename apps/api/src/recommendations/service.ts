@@ -3,7 +3,7 @@ import type { PersonalityAnalysis } from "../personality/types";
 import { extractListeningSignals } from "../personality/signals";
 import type { EnrichedArtist } from "../spotify-api/types";
 import { normalizeArtistName } from "../spotify-api/normalize";
-import { getRelatedArtists, searchArtistsByGenre } from "../spotify-api/client";
+import { searchArtistsByGenre } from "../spotify-api/client";
 import { isSpotifyConfigured } from "../spotify-api/auth";
 import type { NormalizedListeningEvent } from "../spotify/types";
 import type { ArtistRecommendation, RecommendationCandidate, RecommendationInput } from "./types";
@@ -14,7 +14,7 @@ import {
 } from "./utils";
 
 const RECOMMENDATION_COUNT = 3;
-const MAX_SEED_ARTISTS = 2;
+const MAX_SEED_GENRES = 3;
 
 function toCandidate(
   item: {
@@ -60,34 +60,23 @@ function buildInput(
 
 async function collectCandidates(
   input: RecommendationInput,
-  artistGenres: Map<string, EnrichedArtist>,
 ): Promise<RecommendationCandidate[]> {
   const candidates: RecommendationCandidate[] = [];
   const seen = new Set<string>();
 
-  const seeds = input.topArtists.slice(0, MAX_SEED_ARTISTS);
-  for (const seedName of seeds) {
-    const seedMeta = artistGenres.get(normalizeArtistName(seedName));
-    if (!seedMeta?.spotifyArtistId) continue;
+  const genreSearches = await Promise.all(
+    input.topGenres.slice(0, MAX_SEED_GENRES).map(async (genre) => ({
+      genre,
+      search: await searchArtistsByGenre(genre, 8),
+    })),
+  );
 
-    const related = await getRelatedArtists(seedMeta.spotifyArtistId);
-    for (const artist of related?.artists ?? []) {
+  for (const { genre, search } of genreSearches) {
+    for (const artist of search?.artists.items ?? []) {
       const key = normalizeArtistName(artist.name);
       if (seen.has(key) || isAlreadyListened(artist.name, input.listenedArtists)) continue;
       seen.add(key);
-      candidates.push(toCandidate(artist, seedName, "related"));
-    }
-  }
-
-  if (candidates.length < RECOMMENDATION_COUNT) {
-    for (const genre of input.topGenres.slice(0, 2)) {
-      const search = await searchArtistsByGenre(genre, 8);
-      for (const artist of search?.artists.items ?? []) {
-        const key = normalizeArtistName(artist.name);
-        if (seen.has(key) || isAlreadyListened(artist.name, input.listenedArtists)) continue;
-        seen.add(key);
-        candidates.push(toCandidate(artist, input.topArtists[0] ?? "your rotation", "genre-search"));
-      }
+      candidates.push(toCandidate(artist, genre, "genre-search"));
     }
   }
 
@@ -103,7 +92,7 @@ export async function generateRecommendations(
   if (!isSpotifyConfigured()) return [];
 
   const input = buildInput(events, analytics, personality, artistGenres);
-  const candidates = await collectCandidates(input, artistGenres);
+  const candidates = await collectCandidates(input);
 
   const ranked = candidates
     .map((candidate) => ({

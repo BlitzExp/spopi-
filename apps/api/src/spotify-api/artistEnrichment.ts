@@ -57,22 +57,25 @@ export async function enrichArtists(
 
   for (let i = 0; i < toFetch.length; i += BATCH_SIZE) {
     const batch = toFetch.slice(i, i + BATCH_SIZE);
+    const enrichedBatch = await Promise.all(
+      batch.map(async (artistName) => {
+        try {
+          return await fetchArtistMetadata(artistName);
+        } catch {
+          return {
+            artistName: normalizeArtistName(artistName),
+            spotifyArtistId: null,
+            genres: [],
+            imageUrl: null,
+          };
+        }
+      }),
+    );
 
-    for (const artistName of batch) {
-      try {
-        const enriched = await fetchArtistMetadata(artistName);
-        await saveArtistMetadata(enriched);
-        result.set(enriched.artistName, enriched);
-      } catch {
-        const fallback: EnrichedArtist = {
-          artistName: normalizeArtistName(artistName),
-          spotifyArtistId: null,
-          genres: [],
-          imageUrl: null,
-        };
-        await saveArtistMetadata(fallback);
-        result.set(fallback.artistName, fallback);
-      }
+    await Promise.all(enrichedBatch.map((artist) => saveArtistMetadata(artist)));
+
+    for (const artist of enrichedBatch) {
+      result.set(artist.artistName, artist);
     }
   }
 

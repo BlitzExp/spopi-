@@ -5,7 +5,7 @@ export type RecommendationCandidate = {
   imageUrl: string | null;
   popularity: number;
   seedArtist: string;
-  source: "related" | "genre-search";
+  source: "genre-search";
 };
 
 export type ArtistRecommendation = {

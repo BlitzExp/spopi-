@@ -1,8 +1,9 @@
 import { getSpotifyAccessToken } from "./auth";
 import { fetchWithRateLimit, sleep } from "./rateLimit";
-import type { SpotifyArtistSearchResponse, SpotifyRelatedArtistsResponse } from "./types";
+import type { SpotifyArtistSearchResponse } from "./types";
 
 const REQUEST_DELAY_MS = 300;
+const API_REQUEST_TIMEOUT_MS = 8_000;
 
 export async function searchArtistByName(
   artistName: string,
@@ -15,9 +16,15 @@ export async function searchArtistByName(
 
   await sleep(REQUEST_DELAY_MS);
 
-  const response = await fetchWithRateLimit(url, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  let response: Response;
+  try {
+    response = await fetchWithRateLimit(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(API_REQUEST_TIMEOUT_MS),
+    });
+  } catch {
+    return null;
+  }
 
   if (!response.ok) return null;
 
@@ -36,30 +43,17 @@ export async function searchArtistsByGenre(
 
   await sleep(REQUEST_DELAY_MS);
 
-  const response = await fetchWithRateLimit(url, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  let response: Response;
+  try {
+    response = await fetchWithRateLimit(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(API_REQUEST_TIMEOUT_MS),
+    });
+  } catch {
+    return null;
+  }
 
   if (!response.ok) return null;
 
   return (await response.json()) as SpotifyArtistSearchResponse;
-}
-
-export async function getRelatedArtists(
-  spotifyArtistId: string,
-): Promise<SpotifyRelatedArtistsResponse | null> {
-  const token = await getSpotifyAccessToken();
-  if (!token) return null;
-
-  const url = `https://api.spotify.com/v1/artists/${spotifyArtistId}/related-artists`;
-
-  await sleep(REQUEST_DELAY_MS);
-
-  const response = await fetchWithRateLimit(url, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  if (!response.ok) return null;
-
-  return (await response.json()) as SpotifyRelatedArtistsResponse;
 }
