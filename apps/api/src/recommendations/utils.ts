@@ -55,9 +55,8 @@ export function scoreCandidate(
   const overlap = genreOverlapScore(candidate.genres, input.topGenres);
   const personality = personalityGenreBoost(input.dominantPersonalityId, candidate.genres);
   const discovery = discoveryScore(candidate.popularity, input.nicheArtistShare);
-  const relatedBoost = candidate.source === "related" ? 0.15 : 0;
 
-  return overlap * 0.45 + personality * 0.3 + discovery * 0.2 + relatedBoost;
+  return overlap * 0.5 + personality * 0.3 + discovery * 0.2;
 }
 
 export function buildRecommendationCopy(
@@ -79,8 +78,8 @@ export function buildRecommendationCopy(
   if (input.dominantPersonalityId === "indie-explorer") {
     return {
       label: "Hidden Gem Alert",
-      explanation: `A deep-cut artist adjacent to ${seed}.`,
-      reason: `You got ${candidate.name} because your indie explorer streak loves artists connected to ${seed}.`,
+      explanation: `A deep-cut artist from your ${seed} lane.`,
+      reason: `You got ${candidate.name} because your indie explorer streak lines up with ${seed}.`,
     };
   }
 
@@ -102,7 +101,7 @@ export function buildRecommendationCopy(
 
   return {
     label: "Curated For You",
-    explanation: `Connected to ${seed} and your top ${topGenre} rotation.`,
+    explanation: `Pulled from ${seed} and your top ${topGenre} rotation.`,
     reason: `You got ${candidate.name} because your favorites in ${topGenre} and ${input.dominantPersonalityName} energy align here.`,
   };
 }
